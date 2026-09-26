@@ -61,8 +61,8 @@ class HistoryScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Your\nmoments',
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      'Memories\nfor you',
+                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white),
                     ),
                   ),
                   Container(
@@ -71,7 +71,7 @@ class HistoryScreen extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.lime,
+                      color: AppTheme.yellow,
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: const Text(
@@ -130,7 +130,7 @@ class _MomentCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.ink.withValues(alpha: 0.5),
+                color: Colors.white54,
               ),
             ),
             const Spacer(),
