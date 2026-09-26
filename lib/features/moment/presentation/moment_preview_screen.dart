@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../data/moment_repository.dart';
+import '../domain/moment.dart';
 import '../../spending/presentation/add_spending_sheet.dart';
 
 class MomentPreviewScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class MomentPreviewScreen extends StatefulWidget {
 class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
   final _captionController = TextEditingController();
   SpendingDraft? _spending;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -37,10 +40,54 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
     }
   }
 
-  void _saveMoment() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã lưu khoảnh khắc — phần lưu trữ sẽ được hoàn thiện sau.')),
-    );
+  Future<void> _saveMoment() async {
+    final imagePath = widget.imagePath;
+    if (imagePath == null || imagePath.isEmpty || _isSaving) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không tìm thấy ảnh để lưu.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final spending = _spending == null
+          ? null
+          : MomentSpending(
+              amount: _spending!.amount,
+              category: _spending!.category,
+              wallet: _spending!.wallet,
+              note: _spending!.note,
+            );
+
+      await MomentRepository.instance.saveMoment(
+        sourceImagePath: imagePath,
+        caption: _captionController.text,
+        spending: spending,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu khoảnh khắc 💛')),
+      );
+      Navigator.of(context).pop(true);
+    } on FileSystemException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể lưu khoảnh khắc lúc này.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -114,9 +161,22 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
                     ),
                     const SizedBox(height: 18),
                     FilledButton.icon(
-                      onPressed: _saveMoment,
-                      icon: const Icon(Icons.favorite_rounded),
-                      label: const Text('Giữ lại khoảnh khắc này'),
+                      onPressed: _isSaving ? null : _saveMoment,
+                      icon: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: AppTheme.ink,
+                              ),
+                            )
+                          : const Icon(Icons.favorite_rounded),
+                      label: Text(
+                        _isSaving
+                            ? 'Đang lưu...'
+                            : 'Giữ lại khoảnh khắc này',
+                      ),
                     ),
                     const SizedBox(height: 10),
                     const Text(
