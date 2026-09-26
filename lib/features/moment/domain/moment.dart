@@ -51,6 +51,22 @@ class Moment {
         'spending': spending?.toJson(),
       };
 
+  Moment copyWith({
+    String? imagePath,
+    String? caption,
+    DateTime? createdAt,
+    MomentSpending? spending,
+    bool clearSpending = false,
+  }) {
+    return Moment(
+      id: id,
+      imagePath: imagePath ?? this.imagePath,
+      caption: caption ?? this.caption,
+      createdAt: createdAt ?? this.createdAt,
+      spending: clearSpending ? null : (spending ?? this.spending),
+    );
+  }
+
   factory Moment.fromJson(Map<String, dynamic> json) {
     final spendingJson = json['spending'];
 
