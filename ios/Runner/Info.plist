@@ -22,6 +22,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Daily Money uses the camera to capture your daily moments.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Daily Money may use the microphone when camera features support video.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
