@@ -9,7 +9,7 @@ class DailyMoneyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Daily Money',
+      title: 'Nhật Ký Hôm Nay',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       home: const CameraScreen(),
