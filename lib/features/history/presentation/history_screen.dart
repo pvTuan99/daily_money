@@ -32,6 +32,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
     await _momentsFuture;
   }
 
+  Future<void> _openMoment(Moment moment) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MomentDetailScreen(moment: moment),
+      ),
+    );
+
+    if (!mounted) return;
+    setState(_reload);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,22 +118,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding: const EdgeInsets.fromLTRB(14, 14, 14, 32),
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _MomentCard(
-                        moment: moments[index],
-                        onTap: () async {
-                          final changed = await Navigator.of(context).push<bool>(
-                            MaterialPageRoute(
-                              builder: (_) => MomentDetailScreen(
-                                moment: moments[index],
-                              ),
-                            ),
-                          );
-
-                          if (changed == true && mounted) {
-                            setState(_reload);
-                          }
-                        },
-                      ),
+                      (context, index) {
+                        final moment = moments[index];
+                        return _MomentCard(
+                          moment: moment,
+                          onTap: () => _openMoment(moment),
+                        );
+                      },
                       childCount: moments.length,
                     ),
                     gridDelegate:
@@ -159,17 +161,19 @@ class _EmptyMoments extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         children: [
           const SizedBox(height: 90),
-          Container(
-            width: 76,
-            height: 76,
-            decoration: const BoxDecoration(
-              color: AppTheme.yellow,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.favorite_outline_rounded,
-              size: 34,
-              color: AppTheme.ink,
+          Center(
+            child: Container(
+              width: 76,
+              height: 76,
+              decoration: const BoxDecoration(
+                color: AppTheme.yellow,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.favorite_outline_rounded,
+                size: 34,
+                color: AppTheme.ink,
+              ),
             ),
           ),
           const SizedBox(height: 22),
@@ -191,9 +195,7 @@ class _EmptyMoments extends StatelessWidget {
               height: 1.45,
             ),
           ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -223,93 +225,96 @@ class _MomentCard extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(26),
             child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (hasImage)
-            Image.file(
-              imageFile,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.low,
-            )
-          else
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.softBlue,
-                    AppTheme.softPink,
-                    AppTheme.softYellow,
-                  ],
-                ),
-              ),
-            ),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0x11000000),
-                  Color(0x00000000),
-                  Color(0xB3000000),
-                ],
-                stops: [0, 0.45, 1],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              fit: StackFit.expand,
               children: [
-                Text(
-                  _formatDate(moment.createdAt),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Spacer(),
-                if (moment.caption.isNotEmpty) ...[
-                  Text(
-                    moment.caption,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      height: 1.15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                if (moment.spending != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
+                if (hasImage)
+                  Image.file(
+                    imageFile,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.low,
+                  )
+                else
+                  const DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppTheme.yellow,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    child: Text(
-                      _formatAmount(moment.spending!.amount),
-                      style: const TextStyle(
-                        color: AppTheme.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppTheme.softBlue,
+                          AppTheme.softPink,
+                          AppTheme.softYellow,
+                        ],
                       ),
                     ),
                   ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0x11000000),
+                        Color(0x00000000),
+                        Color(0xB3000000),
+                      ],
+                      stops: [0, 0.45, 1],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _formatDate(moment.createdAt),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (moment.caption.isNotEmpty) ...[
+                        Text(
+                          moment.caption,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            height: 1.15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (moment.spending != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.yellow,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            _formatAmount(moment.spending!.amount),
+                            style: const TextStyle(
+                              color: AppTheme.ink,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
