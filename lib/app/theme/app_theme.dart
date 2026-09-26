@@ -45,7 +45,7 @@ abstract final class AppTheme {
         ),
         titleLarge: TextStyle(
           fontSize: 20,
-          fontWeight: FontWeight.w750,
+          fontWeight: FontWeight.w700,
           letterSpacing: -0.3,
         ),
         bodyLarge: TextStyle(
