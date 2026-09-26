@@ -46,14 +46,14 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
   late String _wallet;
 
   static const _categories = [
-    ('Food', '🍜'),
-    ('Coffee', '☕'),
-    ('Travel', '🛵'),
-    ('Shopping', '🛍️'),
-    ('Fun', '🎮'),
+    ('Ăn uống', '🍜'),
+    ('Cà phê', '☕'),
+    ('Đi lại', '🛵'),
+    ('Mua sắm', '🛍️'),
+    ('Giải trí', '🎮'),
   ];
 
-  static const _wallets = ['Cash', 'Bank'];
+  static const _wallets = ['Tiền mặt', 'Ngân hàng'];
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
 
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount first.')),
+        const SnackBar(content: Text('Hãy nhập số tiền trước.')),
       );
       return;
     }
@@ -123,12 +123,12 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
               ),
               const SizedBox(height: 18),
               Text(
-                'Add spending',
+                'Thêm chi tiêu',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 6),
               Text(
-                'Attach money to this moment — only if it belongs here.',
+                'Gắn khoản chi vào khoảnh khắc này nếu bạn muốn.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppTheme.ink.withValues(alpha: 0.55),
                     ),
@@ -148,7 +148,7 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
                 ),
               ),
               const SizedBox(height: 18),
-              const _SectionLabel('Category'),
+              const _SectionLabel('Danh mục'),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -165,19 +165,19 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
                 ],
               ),
               const SizedBox(height: 18),
-              const _SectionLabel('Wallet'),
+              const _SectionLabel('Ví'),
               const SizedBox(height: 10),
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(
-                    value: 'Cash',
+                    value: 'Tiền mặt',
                     icon: Icon(Icons.wallet_rounded),
-                    label: Text('Cash'),
+                    label: Text('Tiền mặt'),
                   ),
                   ButtonSegment(
-                    value: 'Bank',
+                    value: 'Ngân hàng',
                     icon: Icon(Icons.account_balance_rounded),
-                    label: Text('Bank'),
+                    label: Text('Ngân hàng'),
                   ),
                 ],
                 selected: {_wallet},
@@ -190,14 +190,14 @@ class _AddSpendingSheetState extends State<AddSpendingSheet> {
                 controller: _noteController,
                 maxLines: 2,
                 decoration: const InputDecoration(
-                  hintText: 'Note (optional)',
+                  hintText: 'Ghi chú (không bắt buộc)',
                   prefixIcon: Icon(Icons.notes_rounded),
                 ),
               ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _save,
-                child: const Text('Attach spending'),
+                child: const Text('Thêm khoản chi'),
               ),
             ],
           ),
