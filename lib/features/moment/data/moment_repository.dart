@@ -66,7 +66,7 @@ class MomentRepository {
     final id = now.microsecondsSinceEpoch.toString();
     final directory = await _momentsDirectory();
     final extension = _fileExtension(sourceImagePath);
-    final savedImage = await source.copy('${directory.path}/${id}.$extension');
+    final savedImage = await source.copy('${directory.path}/$id.$extension');
 
     final moment = Moment(
       id: id,
