@@ -206,7 +206,7 @@ class _MomentDetailScreenState extends State<MomentDetailScreen> {
                   File(_moment.imagePath),
                   fit: BoxFit.cover,
                   filterQuality: FilterQuality.medium,
-                  errorBuilder: (_, __, ___) => const ColoredBox(
+                  errorBuilder: (_, _, _) => const ColoredBox(
                     color: Color(0xFF292929),
                     child: Center(
                       child: Icon(
