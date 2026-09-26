@@ -561,7 +561,7 @@ class _CameraFallback extends StatelessWidget {
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
-                  fontWeight: FontWeight.w850,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 8),
