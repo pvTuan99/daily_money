@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../moment/data/moment_repository.dart';
 import '../../moment/domain/moment.dart';
+import '../../moment/presentation/moment_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -106,7 +107,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding: const EdgeInsets.fromLTRB(14, 14, 14, 32),
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _MomentCard(moment: moments[index]),
+                      (context, index) => _MomentCard(
+                        moment: moments[index],
+                        onTap: () async {
+                          final changed = await Navigator.of(context).push<bool>(
+                            MaterialPageRoute(
+                              builder: (_) => MomentDetailScreen(
+                                moment: moments[index],
+                              ),
+                            ),
+                          );
+
+                          if (changed == true && mounted) {
+                            setState(_reload);
+                          }
+                        },
+                      ),
                       childCount: moments.length,
                     ),
                     gridDelegate:
@@ -175,25 +191,38 @@ class _EmptyMoments extends StatelessWidget {
               height: 1.45,
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class _MomentCard extends StatelessWidget {
-  const _MomentCard({required this.moment});
+  const _MomentCard({
+    required this.moment,
+    required this.onTap,
+  });
 
   final Moment moment;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final imageFile = File(moment.imagePath);
     final hasImage = imageFile.existsSync();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(26),
-      child: Stack(
+    return Hero(
+      tag: 'moment-${moment.id}',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(26),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: Stack(
         fit: StackFit.expand,
         children: [
           if (hasImage)
