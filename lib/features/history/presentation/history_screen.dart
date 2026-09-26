@@ -7,28 +7,28 @@ class HistoryScreen extends StatelessWidget {
 
   static const _moments = [
     _MomentMock(
-      time: 'Today · 18:42',
-      caption: 'Dinner after a long day ✨',
+      time: 'Hôm nay · 18:42',
+      caption: 'Bữa tối sau một ngày dài ✨',
       amount: '85.000 ₫',
       emoji: '🍜',
       colors: [Color(0xFFFFD7C2), Color(0xFFFFF0B8)],
     ),
     _MomentMock(
-      time: 'Today · 14:10',
-      caption: 'Coffee + bug fixing',
+      time: 'Hôm nay · 14:10',
+      caption: 'Cà phê + sửa bug',
       amount: '32.000 ₫',
       emoji: '☕',
       colors: [Color(0xFFE4DBFF), Color(0xFFCDEBFF)],
     ),
     _MomentMock(
-      time: 'Yesterday · 20:03',
-      caption: 'Just a nice sky',
+      time: 'Hôm qua · 20:03',
+      caption: 'Một bầu trời thật đẹp',
       emoji: '🌆',
       colors: [Color(0xFFCCD7FF), Color(0xFFFFCDEB)],
     ),
     _MomentMock(
-      time: 'Yesterday · 12:21',
-      caption: 'Quick lunch',
+      time: 'Hôm qua · 12:21',
+      caption: 'Bữa trưa nhanh gọn',
       amount: '45.000 ₫',
       emoji: '🥗',
       colors: [Color(0xFFD9FFC9), Color(0xFFFFE8A8)],
@@ -61,7 +61,7 @@ class HistoryScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Memories\nfor you',
+                      'Kỷ niệm\ncủa bạn',
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white),
                     ),
                   ),
@@ -75,7 +75,7 @@ class HistoryScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: const Text(
-                      '4 this week',
+                      '4 tuần này',
                       style: TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
