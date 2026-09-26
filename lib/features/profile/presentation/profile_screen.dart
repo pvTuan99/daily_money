@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_theme.dart';
@@ -90,6 +91,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 14),
+              _SectionCard(
+                title: 'Tài khoản',
+                children: [
+                  _SettingsTile(
+                    icon: Icons.mail_outline_rounded,
+                    title: FirebaseAuth.instance.currentUser?.email ??
+                        'Tài khoản Daily Money',
+                    subtitle: 'Đăng nhập bằng Email/Password',
+                  ),
+                  const _Divider(),
+                  _SettingsTile(
+                    icon: Icons.logout_rounded,
+                    title: 'Đăng xuất',
+                    subtitle: 'Dữ liệu local vẫn được giữ trên thiết bị',
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (!context.mounted) return;
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
               const _SectionCard(
                 title: 'Daily Money',
                 children: [
@@ -108,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     title: 'Phiên bản',
-                    subtitle: 'Prototype 0.1',
+                    subtitle: 'Prototype 0.2',
                   ),
                 ],
               ),
