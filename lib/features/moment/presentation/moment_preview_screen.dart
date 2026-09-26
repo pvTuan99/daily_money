@@ -39,48 +39,72 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
 
   void _saveMoment() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Moment saved — local storage comes next.')),
+      const SnackBar(content: Text('Moment saved — storage comes next.')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
+      backgroundColor: AppTheme.ink,
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
               child: Row(
                 children: [
-                  IconButton.filledTonal(
+                  _DarkIconButton(
+                    icon: Icons.close_rounded,
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
                   ),
                   const Spacer(),
-                  Text('New moment', style: textTheme.titleLarge),
+                  const Text(
+                    'your moment',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
                   const Spacer(),
-                  const SizedBox(width: 48),
+                  const SizedBox(width: 46),
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _MomentImage(imagePath: widget.imagePath),
-                    const SizedBox(height: 18),
-                    TextField(
-                      controller: _captionController,
-                      minLines: 1,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        hintText: 'What happened?',
-                        prefixIcon: Icon(Icons.edit_rounded),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: TextField(
+                        controller: _captionController,
+                        minLines: 1,
+                        maxLines: 3,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'say something about this…',
+                          hintStyle: TextStyle(color: Colors.white38),
+                          prefixIcon: Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white60,
+                          ),
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -88,18 +112,20 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
                       spending: _spending,
                       onTap: _openSpendingSheet,
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 18),
                     FilledButton.icon(
                       onPressed: _saveMoment,
-                      icon: const Icon(Icons.auto_awesome_rounded),
-                      label: const Text('Save this moment'),
+                      icon: const Icon(Icons.favorite_rounded),
+                      label: const Text('Keep this moment'),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      'Money is optional. Your moment is still a moment without it.',
+                    const Text(
+                      'spending is optional — the memory comes first',
                       textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.ink.withValues(alpha: 0.52),
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -109,6 +135,29 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DarkIconButton extends StatelessWidget {
+  const _DarkIconButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.white.withValues(alpha: 0.1),
+        foregroundColor: Colors.white,
+        minimumSize: const Size(46, 46),
+      ),
+      icon: Icon(icon),
     );
   }
 }
@@ -134,9 +183,9 @@ class _MomentImage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppTheme.softLavender,
-                      AppTheme.softPeach,
-                      AppTheme.lime,
+                      AppTheme.softBlue,
+                      AppTheme.softPink,
+                      AppTheme.softYellow,
                     ],
                   ),
                 ),
@@ -167,25 +216,32 @@ class _SpendingCard extends StatelessWidget {
     final draft = spending;
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
+      color: draft == null
+          ? Colors.white.withValues(alpha: 0.08)
+          : AppTheme.yellow,
+      borderRadius: BorderRadius.circular(22),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
         onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: AppTheme.lime,
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: draft == null
+                      ? Colors.white.withValues(alpha: 0.10)
+                      : AppTheme.ink,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.payments_rounded),
+                child: Icon(
+                  Icons.payments_rounded,
+                  color: draft == null ? Colors.white : AppTheme.yellow,
+                ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 13),
               Expanded(
                 child: draft == null
                     ? const Column(
@@ -193,10 +249,16 @@ class _SpendingCard extends StatelessWidget {
                         children: [
                           Text(
                             'Add spending',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                          SizedBox(height: 3),
-                          Text('Optional · keep the memory first'),
+                          SizedBox(height: 2),
+                          Text(
+                            'optional',
+                            style: TextStyle(color: Colors.white38),
+                          ),
                         ],
                       )
                     : Column(
@@ -205,16 +267,26 @@ class _SpendingCard extends StatelessWidget {
                           Text(
                             draft.amountLabel,
                             style: const TextStyle(
+                              color: AppTheme.ink,
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          Text('${draft.category} · ${draft.wallet}'),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${draft.category} · ${draft.wallet}',
+                            style: const TextStyle(
+                              color: AppTheme.ink,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
               ),
-              const Icon(Icons.chevron_right_rounded),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: draft == null ? Colors.white60 : AppTheme.ink,
+              ),
             ],
           ),
         ),
