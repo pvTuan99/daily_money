@@ -64,7 +64,7 @@ class _CameraScreenState extends State<CameraScreen>
         setState(() {
           _cameras = const [];
           _isInitializing = false;
-          _errorMessage = 'No camera was found on this device.';
+          _errorMessage = 'Không tìm thấy camera trên thiết bị này.';
         });
         return;
       }
@@ -81,7 +81,7 @@ class _CameraScreenState extends State<CameraScreen>
       if (!mounted) return;
       setState(() {
         _isInitializing = false;
-        _errorMessage = 'Could not start the camera.';
+        _errorMessage = 'Không thể khởi động camera.';
       });
     }
   }
@@ -104,7 +104,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     final controller = CameraController(
       _cameras[cameraIndex],
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
     );
 
@@ -134,11 +134,11 @@ class _CameraScreenState extends State<CameraScreen>
 
     final message = switch (error.code) {
       'CameraAccessDenied' =>
-        'Allow camera access so you can capture your daily moment.',
+        'Hãy cho phép truy cập camera để lưu lại khoảnh khắc hôm nay.',
       'CameraAccessDeniedWithoutPrompt' =>
-        'Camera permission is off. Enable it in device settings.',
-      'CameraAccessRestricted' => 'Camera access is restricted on this device.',
-      _ => 'Camera error: ${error.description ?? error.code}',
+        'Quyền camera đang bị tắt. Hãy bật lại trong cài đặt thiết bị.',
+      'CameraAccessRestricted' => 'Thiết bị này đang hạn chế quyền truy cập camera.',
+      _ => 'Lỗi camera: ${error.description ?? error.code}',
     };
 
     setState(() {
@@ -163,7 +163,7 @@ class _CameraScreenState extends State<CameraScreen>
       await controller.setFlashMode(nextMode);
       if (mounted) setState(() => _flashMode = nextMode);
     } on CameraException {
-      _showSnackBar('Could not change flash mode.');
+      _showSnackBar('Không thể thay đổi chế độ flash.');
     }
   }
 
@@ -188,7 +188,7 @@ class _CameraScreenState extends State<CameraScreen>
         ),
       );
     } on CameraException {
-      _showSnackBar('Could not capture this moment.');
+      _showSnackBar('Không thể chụp khoảnh khắc này.');
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -224,7 +224,7 @@ class _CameraScreenState extends State<CameraScreen>
                 children: [
                   _RoundIconButton(
                     icon: Icons.grid_view_rounded,
-                    label: 'Moments',
+                    label: 'Khoảnh khắc',
                     onPressed: _openHistory,
                   ),
                   const Spacer(),
@@ -232,7 +232,7 @@ class _CameraScreenState extends State<CameraScreen>
                   const Spacer(),
                   _RoundIconButton(
                     icon: Icons.cameraswitch_rounded,
-                    label: 'Switch camera',
+                    label: 'Đổi camera',
                     onPressed: cameraReady && _cameras.length > 1
                         ? _switchCamera
                         : null,
@@ -263,7 +263,7 @@ class _CameraScreenState extends State<CameraScreen>
                           children: [
                             Expanded(
                               child: Text(
-                                'little moments\nmake the day.',
+                                'Những khoảnh khắc nhỏ\nlàm nên một ngày.',
                                 style: Theme.of(context)
                                     .textTheme
                                     .headlineMedium
@@ -301,8 +301,8 @@ class _CameraScreenState extends State<CameraScreen>
                 children: [
                   _BottomAction(
                     icon: Icons.photo_library_outlined,
-                    label: 'Gallery',
-                    onTap: () => _showSnackBar('Gallery import comes later.'),
+                    label: 'Thư viện',
+                    onTap: () => _showSnackBar('Tính năng chọn ảnh từ thư viện sẽ có sau.'),
                   ),
                   _CaptureButton(
                     isBusy: _isCapturing,
@@ -311,14 +311,14 @@ class _CameraScreenState extends State<CameraScreen>
                   ),
                   _BottomAction(
                     icon: Icons.person_outline_rounded,
-                    label: 'Me',
-                    onTap: () => _showSnackBar('Profile comes later.'),
+                    label: 'Tôi',
+                    onTap: () => _showSnackBar('Trang cá nhân sẽ có sau.'),
                   ),
                 ],
               ),
             ),
             Text(
-              'tap once. keep today.',
+              'chạm một lần, giữ lại hôm nay.',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.55),
                 fontSize: 12,
@@ -351,7 +351,7 @@ class _BrandPill extends StatelessWidget {
           Icon(Icons.circle, size: 8, color: AppTheme.ink),
           SizedBox(width: 7),
           Text(
-            'DAILY',
+            'HÔM NAY',
             style: TextStyle(
               color: AppTheme.ink,
               fontSize: 12,
@@ -382,9 +382,9 @@ class _CameraBody extends StatelessWidget {
   Widget build(BuildContext context) {
     if (errorMessage != null) {
       return _CameraFallback(
-        title: 'Camera unavailable',
+        title: 'Không thể dùng camera',
         message: errorMessage!,
-        actionLabel: 'Try again',
+        actionLabel: 'Thử lại',
         onAction: onRetry,
       );
     }
@@ -393,8 +393,8 @@ class _CameraBody extends StatelessWidget {
         controller == null ||
         !controller!.value.isInitialized) {
       return const _CameraFallback(
-        title: 'Opening camera…',
-        message: 'Your next little moment is almost ready.',
+        title: 'Đang mở camera…',
+        message: 'Khoảnh khắc tiếp theo sắp sẵn sàng rồi.',
       );
     }
 
