@@ -143,7 +143,7 @@ class _MomentCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 15,
                 height: 1.15,
-                fontWeight: FontWeight.w850,
+                fontWeight: FontWeight.w800,
               ),
             ),
             if (moment.amount != null) ...[
