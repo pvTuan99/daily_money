@@ -79,15 +79,46 @@ class MomentRepository {
     final moments = await getMoments();
     final updated = [moment, ...moments];
 
+    await _writeMoments(updated);
+
+    return moment;
+  }
+
+  Future<Moment> updateMoment(Moment updatedMoment) async {
+    final moments = await getMoments();
+    final index = moments.indexWhere((item) => item.id == updatedMoment.id);
+
+    if (index == -1) {
+      throw const FileSystemException('Không tìm thấy khoảnh khắc để cập nhật.');
+    }
+
+    moments[index] = updatedMoment;
+    moments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    await _writeMoments(moments);
+    return updatedMoment;
+  }
+
+  Future<void> deleteMoment(Moment moment) async {
+    final moments = await getMoments();
+    final updated = moments.where((item) => item.id != moment.id).toList();
+
+    await _writeMoments(updated);
+
+    final imageFile = File(moment.imagePath);
+    if (await imageFile.exists()) {
+      await imageFile.delete();
+    }
+  }
+
+  Future<void> _writeMoments(List<Moment> moments) async {
     final metadata = await _metadataFile();
     await metadata.writeAsString(
       const JsonEncoder.withIndent('  ').convert(
-        updated.map((item) => item.toJson()).toList(),
+        moments.map((item) => item.toJson()).toList(),
       ),
       flush: true,
     );
-
-    return moment;
   }
 
   String _fileExtension(String path) {
