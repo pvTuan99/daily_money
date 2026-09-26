@@ -39,7 +39,7 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
 
   void _saveMoment() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Moment saved — storage comes next.')),
+      const SnackBar(content: Text('Đã lưu khoảnh khắc — phần lưu trữ sẽ được hoàn thiện sau.')),
     );
   }
 
@@ -60,7 +60,7 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
                   ),
                   const Spacer(),
                   const Text(
-                    'your moment',
+                    'khoảnh khắc của bạn',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 17,
@@ -94,7 +94,7 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                         decoration: const InputDecoration(
-                          hintText: 'say something about this…',
+                          hintText: 'viết vài dòng về khoảnh khắc này…',
                           hintStyle: TextStyle(color: Colors.white38),
                           prefixIcon: Icon(
                             Icons.edit_rounded,
@@ -116,11 +116,11 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
                     FilledButton.icon(
                       onPressed: _saveMoment,
                       icon: const Icon(Icons.favorite_rounded),
-                      label: const Text('Keep this moment'),
+                      label: const Text('Giữ lại khoảnh khắc này'),
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'spending is optional — the memory comes first',
+                      'chi tiêu là tùy chọn — kỷ niệm vẫn là điều quan trọng nhất',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white38,
@@ -248,7 +248,7 @@ class _SpendingCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Add spending',
+                            'Thêm chi tiêu',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
@@ -256,7 +256,7 @@ class _SpendingCard extends StatelessWidget {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'optional',
+                            'không bắt buộc',
                             style: TextStyle(color: Colors.white38),
                           ),
                         ],
