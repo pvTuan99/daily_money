@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../history/presentation/history_screen.dart';
 import '../../moment/presentation/moment_preview_screen.dart';
+import '../../profile/presentation/profile_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -200,6 +201,12 @@ class _CameraScreenState extends State<CameraScreen>
     );
   }
 
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
+  }
+
   void _showSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -312,7 +319,7 @@ class _CameraScreenState extends State<CameraScreen>
                   _BottomAction(
                     icon: Icons.person_outline_rounded,
                     label: 'Tôi',
-                    onTap: () => _showSnackBar('Trang cá nhân sẽ có sau.'),
+                    onTap: _openProfile,
                   ),
                 ],
               ),
