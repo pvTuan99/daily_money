@@ -122,7 +122,7 @@ class _MomentPreviewScreenState extends State<MomentPreviewScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 24),
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
                 child: Column(
                   children: [
                     _MomentImage(imagePath: widget.imagePath),
@@ -232,9 +232,9 @@ class _MomentImage extends StatelessWidget {
     final path = imagePath;
 
     return AspectRatio(
-      aspectRatio: 4 / 5,
+      aspectRatio: 0.92,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(40),
         child: path != null && File(path).existsSync()
             ? Image.file(File(path), fit: BoxFit.cover)
             : const DecoratedBox(
