@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_theme.dart';
+import '../../history/presentation/history_screen.dart';
+import '../../moment/presentation/moment_preview_screen.dart';
+
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
@@ -41,9 +45,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) {
-      return;
-    }
+    if (controller == null || !controller.value.isInitialized) return;
 
     if (state == AppLifecycleState.inactive) {
       _controller = null;
@@ -56,7 +58,6 @@ class _CameraScreenState extends State<CameraScreen>
   Future<void> _loadCameras() async {
     try {
       final cameras = await availableCameras();
-
       if (!mounted) return;
 
       if (cameras.isEmpty) {
@@ -73,7 +74,6 @@ class _CameraScreenState extends State<CameraScreen>
         (camera) => camera.lensDirection == CameraLensDirection.back,
       );
       _selectedCameraIndex = preferredIndex >= 0 ? preferredIndex : 0;
-
       await _initializeCamera(_selectedCameraIndex);
     } on CameraException catch (error) {
       _showCameraError(error);
@@ -100,9 +100,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     final oldController = _controller;
     _controller = null;
-    if (oldController != null) {
-      await oldController.dispose();
-    }
+    if (oldController != null) await oldController.dispose();
 
     final controller = CameraController(
       _cameras[cameraIndex],
@@ -128,13 +126,6 @@ class _CameraScreenState extends State<CameraScreen>
     } on CameraException catch (error) {
       await controller.dispose();
       _showCameraError(error);
-    } catch (_) {
-      await controller.dispose();
-      if (!mounted) return;
-      setState(() {
-        _isInitializing = false;
-        _errorMessage = 'Could not initialize the camera.';
-      });
     }
   }
 
@@ -143,11 +134,10 @@ class _CameraScreenState extends State<CameraScreen>
 
     final message = switch (error.code) {
       'CameraAccessDenied' =>
-        'Camera access was denied. Allow camera permission to take moments.',
+        'Allow camera access so you can capture your daily moment.',
       'CameraAccessDeniedWithoutPrompt' =>
-        'Camera permission is disabled. Enable it in your device settings.',
-      'CameraAccessRestricted' =>
-        'Camera access is restricted on this device.',
+        'Camera permission is off. Enable it in device settings.',
+      'CameraAccessRestricted' => 'Camera access is restricted on this device.',
       _ => 'Camera error: ${error.description ?? error.code}',
     };
 
@@ -159,9 +149,7 @@ class _CameraScreenState extends State<CameraScreen>
 
   Future<void> _switchCamera() async {
     if (_cameras.length < 2 || _isInitializing || _isCapturing) return;
-
-    final nextIndex = (_selectedCameraIndex + 1) % _cameras.length;
-    await _initializeCamera(nextIndex);
+    await _initializeCamera((_selectedCameraIndex + 1) % _cameras.length);
   }
 
   Future<void> _toggleFlash() async {
@@ -173,10 +161,9 @@ class _CameraScreenState extends State<CameraScreen>
 
     try {
       await controller.setFlashMode(nextMode);
-      if (!mounted) return;
-      setState(() => _flashMode = nextMode);
-    } on CameraException catch (error) {
-      _showSnackBar(error.description ?? 'Could not change flash mode.');
+      if (mounted) setState(() => _flashMode = nextMode);
+    } on CameraException {
+      _showSnackBar('Could not change flash mode.');
     }
   }
 
@@ -195,15 +182,22 @@ class _CameraScreenState extends State<CameraScreen>
       final photo = await controller.takePicture();
       if (!mounted) return;
 
-      _showSnackBar('Moment captured. Preview comes in Phase 3.');
-      debugPrint('Captured photo: ${photo.path}');
-    } on CameraException catch (error) {
-      _showSnackBar(error.description ?? 'Could not capture this moment.');
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => MomentPreviewScreen(imagePath: photo.path),
+        ),
+      );
+    } on CameraException {
+      _showSnackBar('Could not capture this moment.');
     } finally {
-      if (mounted) {
-        setState(() => _isCapturing = false);
-      }
+      if (mounted) setState(() => _isCapturing = false);
     }
+  }
+
+  void _openHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+    );
   }
 
   void _showSnackBar(String message) {
@@ -215,77 +209,106 @@ class _CameraScreenState extends State<CameraScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final controller = _controller;
     final cameraReady =
         controller != null && controller.value.isInitialized && !_isInitializing;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _CameraBody(
-              controller: controller,
-              isInitializing: _isInitializing,
-              errorMessage: _errorMessage,
-              onRetry: _loadCameras,
-            ),
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _CameraBody(
+            controller: controller,
+            isInitializing: _isInitializing,
+            errorMessage: _errorMessage,
+            onRetry: _loadCameras,
+          ),
+          const _SoftVignette(),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
+              child: Column(
                 children: [
-                  _RoundControl(
-                    icon: Icons.history_rounded,
-                    label: 'Moments',
-                    onPressed: () => _showSnackBar(
-                      'Moment history comes in Phase 3.',
-                    ),
+                  Row(
+                    children: [
+                      _GlassButton(
+                        icon: Icons.grid_view_rounded,
+                        label: 'Moments',
+                        onPressed: _openHistory,
+                      ),
+                      const Spacer(),
+                      const _DailyBadge(),
+                      const Spacer(),
+                      _GlassButton(
+                        icon: Icons.cameraswitch_rounded,
+                        label: 'Switch',
+                        onPressed: cameraReady && _cameras.length > 1
+                            ? _switchCamera
+                            : null,
+                      ),
+                    ],
                   ),
-                  _RoundControl(
-                    icon: Icons.cameraswitch_rounded,
-                    label: 'Switch camera',
-                    onPressed:
-                        cameraReady && _cameras.length > 1 ? _switchCamera : null,
+                  const Spacer(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Capture\nwhat today felt like.',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontSize: 30,
+                                shadows: const [
+                                  Shadow(
+                                    blurRadius: 18,
+                                    color: Colors.black54,
+                                  ),
+                                ],
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _GlassButton(
+                        icon: _flashMode == FlashMode.off
+                            ? Icons.flash_off_rounded
+                            : Icons.flash_auto_rounded,
+                        label: 'Flash',
+                        onPressed: cameraReady ? _toggleFlash : null,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _SmallAction(
+                        icon: Icons.photo_library_outlined,
+                        label: 'Gallery',
+                        onTap: () => _showSnackBar('Gallery import comes later.'),
+                      ),
+                      const SizedBox(width: 26),
+                      _CaptureButton(
+                        isBusy: _isCapturing,
+                        enabled: cameraReady,
+                        onPressed: _captureMoment,
+                      ),
+                      const SizedBox(width: 26),
+                      _SmallAction(
+                        icon: Icons.person_outline_rounded,
+                        label: 'Me',
+                        onTap: () => _showSnackBar('Profile comes later.'),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 28,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _RoundControl(
-                    icon: Icons.photo_library_outlined,
-                    label: 'Gallery',
-                    onPressed: () => _showSnackBar(
-                      'Gallery import comes in a later phase.',
-                    ),
-                  ),
-                  _CaptureButton(
-                    color: colors.primary,
-                    isBusy: _isCapturing,
-                    onPressed: cameraReady ? _captureMoment : null,
-                  ),
-                  _RoundControl(
-                    icon: _flashMode == FlashMode.off
-                        ? Icons.flash_off_rounded
-                        : Icons.flash_auto_rounded,
-                    label: 'Flash',
-                    onPressed: cameraReady ? _toggleFlash : null,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -307,8 +330,7 @@ class _CameraBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (errorMessage != null) {
-      return _CameraMessage(
-        icon: Icons.camera_alt_outlined,
+      return _CameraFallback(
         title: 'Camera unavailable',
         message: errorMessage!,
         actionLabel: 'Try again',
@@ -319,128 +341,74 @@ class _CameraBody extends StatelessWidget {
     if (isInitializing ||
         controller == null ||
         !controller!.value.isInitialized) {
-      return const ColoredBox(
-        color: Color(0xFF101010),
-        child: Center(child: CircularProgressIndicator()),
+      return const _CameraFallback(
+        title: 'Opening camera…',
+        message: 'Your next moment is almost ready.',
       );
     }
 
-    return ColoredBox(
-      color: Colors.black,
-      child: Center(
-        child: AspectRatio(
-          aspectRatio: controller!.value.aspectRatio,
-          child: CameraPreview(controller!),
-        ),
+    final size = MediaQuery.sizeOf(context);
+    final scale = 1 /
+        (controller!.value.aspectRatio * (size.width / size.height));
+
+    return ClipRect(
+      child: Transform.scale(
+        scale: scale < 1 ? 1 / scale : scale,
+        child: Center(child: CameraPreview(controller!)),
       ),
     );
   }
 }
 
-class _CameraMessage extends StatelessWidget {
-  const _CameraMessage({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.actionLabel,
-    required this.onAction,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final String actionLabel;
-  final VoidCallback onAction;
+class _SoftVignette extends StatelessWidget {
+  const _SoftVignette();
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xFF101010),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48, color: Colors.white70),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: onAction,
-                child: Text(actionLabel),
-              ),
-            ],
-          ),
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0x66000000),
+            Color(0x00000000),
+            Color(0x11000000),
+            Color(0xAA000000),
+          ],
+          stops: [0, 0.25, 0.58, 1],
         ),
       ),
     );
   }
 }
 
-class _CaptureButton extends StatelessWidget {
-  const _CaptureButton({
-    required this.color,
-    required this.isBusy,
-    required this.onPressed,
-  });
-
-  final Color color;
-  final bool isBusy;
-  final VoidCallback? onPressed;
+class _DailyBadge extends StatelessWidget {
+  const _DailyBadge();
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Capture moment',
-      child: GestureDetector(
-        onTap: onPressed,
-        child: AnimatedOpacity(
-          opacity: onPressed == null ? 0.45 : 1,
-          duration: const Duration(milliseconds: 150),
-          child: Container(
-            width: 84,
-            height: 84,
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-              ),
-              child: isBusy
-                  ? const Padding(
-                      padding: EdgeInsets.all(18),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : null,
-            ),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppTheme.lime,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: const Text(
+        'DAILY',
+        style: TextStyle(
+          color: AppTheme.ink,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.2,
         ),
       ),
     );
   }
 }
 
-class _RoundControl extends StatelessWidget {
-  const _RoundControl({
+class _GlassButton extends StatelessWidget {
+  const _GlassButton({
     required this.icon,
     required this.label,
     required this.onPressed,
@@ -456,12 +424,163 @@ class _RoundControl extends StatelessWidget {
       onPressed: onPressed,
       tooltip: label,
       style: IconButton.styleFrom(
-        backgroundColor: Colors.black45,
+        backgroundColor: Colors.black.withValues(alpha: 0.32),
         foregroundColor: Colors.white,
-        disabledForegroundColor: Colors.white30,
+        disabledForegroundColor: Colors.white38,
         minimumSize: const Size(48, 48),
       ),
       icon: Icon(icon),
+    );
+  }
+}
+
+class _SmallAction extends StatelessWidget {
+  const _SmallAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _GlassButton(icon: icon, label: label, onPressed: onTap),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CaptureButton extends StatelessWidget {
+  const _CaptureButton({
+    required this.isBusy,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool isBusy;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled && !isBusy ? onPressed : null,
+      child: AnimatedOpacity(
+        opacity: enabled ? 1 : 0.5,
+        duration: const Duration(milliseconds: 160),
+        child: Container(
+          width: 92,
+          height: 92,
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+            color: Colors.black.withValues(alpha: 0.18),
+          ),
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.lime,
+            ),
+            child: isBusy
+                ? const Padding(
+                    padding: EdgeInsets.all(22),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppTheme.ink,
+                    ),
+                  )
+                : const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 28,
+                    color: AppTheme.ink,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CameraFallback extends StatelessWidget {
+  const _CameraFallback({
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF2B2535),
+            Color(0xFF141414),
+            Color(0xFF263126),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(36),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.camera_alt_rounded,
+                color: AppTheme.lime,
+                size: 54,
+              ),
+              const SizedBox(height: 18),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w850,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white60),
+              ),
+              if (onAction != null && actionLabel != null) ...[
+                const SizedBox(height: 18),
+                FilledButton.tonal(
+                  onPressed: onAction,
+                  child: Text(actionLabel!),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
