@@ -214,98 +214,149 @@ class _CameraScreenState extends State<CameraScreen>
         controller != null && controller.value.isInitialized && !_isInitializing;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _CameraBody(
-            controller: controller,
-            isInitializing: _isInitializing,
-            errorMessage: _errorMessage,
-            onRetry: _loadCameras,
-          ),
-          const _SoftVignette(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 22),
-              child: Column(
+      backgroundColor: AppTheme.ink,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      _GlassButton(
-                        icon: Icons.grid_view_rounded,
-                        label: 'Moments',
-                        onPressed: _openHistory,
-                      ),
-                      const Spacer(),
-                      const _DailyBadge(),
-                      const Spacer(),
-                      _GlassButton(
-                        icon: Icons.cameraswitch_rounded,
-                        label: 'Switch',
-                        onPressed: cameraReady && _cameras.length > 1
-                            ? _switchCamera
-                            : null,
-                      ),
-                    ],
+                  _RoundIconButton(
+                    icon: Icons.grid_view_rounded,
+                    label: 'Moments',
+                    onPressed: _openHistory,
                   ),
                   const Spacer(),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Capture\nwhat today felt like.',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontSize: 30,
-                                shadows: const [
-                                  Shadow(
-                                    blurRadius: 18,
-                                    color: Colors.black54,
-                                  ),
-                                ],
-                              ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      _GlassButton(
-                        icon: _flashMode == FlashMode.off
-                            ? Icons.flash_off_rounded
-                            : Icons.flash_auto_rounded,
-                        label: 'Flash',
-                        onPressed: cameraReady ? _toggleFlash : null,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _SmallAction(
-                        icon: Icons.photo_library_outlined,
-                        label: 'Gallery',
-                        onTap: () => _showSnackBar('Gallery import comes later.'),
-                      ),
-                      const SizedBox(width: 26),
-                      _CaptureButton(
-                        isBusy: _isCapturing,
-                        enabled: cameraReady,
-                        onPressed: _captureMoment,
-                      ),
-                      const SizedBox(width: 26),
-                      _SmallAction(
-                        icon: Icons.person_outline_rounded,
-                        label: 'Me',
-                        onTap: () => _showSnackBar('Profile comes later.'),
-                      ),
-                    ],
+                  const _BrandPill(),
+                  const Spacer(),
+                  _RoundIconButton(
+                    icon: Icons.cameraswitch_rounded,
+                    label: 'Switch camera',
+                    onPressed: cameraReady && _cameras.length > 1
+                        ? _switchCamera
+                        : null,
                   ),
                 ],
               ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(34),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _CameraBody(
+                        controller: controller,
+                        isInitializing: _isInitializing,
+                        errorMessage: _errorMessage,
+                        onRetry: _loadCameras,
+                      ),
+                      const _CameraGradient(),
+                      Positioned(
+                        left: 18,
+                        right: 18,
+                        bottom: 18,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'little moments\nmake the day.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      shadows: const [
+                                        Shadow(
+                                          blurRadius: 18,
+                                          color: Colors.black54,
+                                        ),
+                                      ],
+                                    ),
+                              ),
+                            ),
+                            _MiniGlassButton(
+                              icon: _flashMode == FlashMode.off
+                                  ? Icons.flash_off_rounded
+                                  : Icons.flash_auto_rounded,
+                              label: 'Flash',
+                              onPressed: cameraReady ? _toggleFlash : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _BottomAction(
+                    icon: Icons.photo_library_outlined,
+                    label: 'Gallery',
+                    onTap: () => _showSnackBar('Gallery import comes later.'),
+                  ),
+                  _CaptureButton(
+                    isBusy: _isCapturing,
+                    enabled: cameraReady,
+                    onPressed: _captureMoment,
+                  ),
+                  _BottomAction(
+                    icon: Icons.person_outline_rounded,
+                    label: 'Me',
+                    onTap: () => _showSnackBar('Profile comes later.'),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'tap once. keep today.',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BrandPill extends StatelessWidget {
+  const _BrandPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: AppTheme.yellow,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.circle, size: 8, color: AppTheme.ink),
+          SizedBox(width: 7),
+          Text(
+            'DAILY',
+            style: TextStyle(
+              color: AppTheme.ink,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.15,
             ),
           ),
         ],
@@ -343,7 +394,7 @@ class _CameraBody extends StatelessWidget {
         !controller!.value.isInitialized) {
       return const _CameraFallback(
         title: 'Opening camera…',
-        message: 'Your next moment is almost ready.',
+        message: 'Your next little moment is almost ready.',
       );
     }
 
@@ -360,8 +411,8 @@ class _CameraBody extends StatelessWidget {
   }
 }
 
-class _SoftVignette extends StatelessWidget {
-  const _SoftVignette();
+class _CameraGradient extends StatelessWidget {
+  const _CameraGradient();
 
   @override
   Widget build(BuildContext context) {
@@ -371,44 +422,20 @@ class _SoftVignette extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0x66000000),
+            Color(0x22000000),
             Color(0x00000000),
-            Color(0x11000000),
-            Color(0xAA000000),
+            Color(0x00000000),
+            Color(0x99000000),
           ],
-          stops: [0, 0.25, 0.58, 1],
+          stops: [0, 0.35, 0.62, 1],
         ),
       ),
     );
   }
 }
 
-class _DailyBadge extends StatelessWidget {
-  const _DailyBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppTheme.lime,
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: const Text(
-        'DAILY',
-        style: TextStyle(
-          color: AppTheme.ink,
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassButton extends StatelessWidget {
-  const _GlassButton({
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({
     required this.icon,
     required this.label,
     required this.onPressed,
@@ -424,9 +451,9 @@ class _GlassButton extends StatelessWidget {
       onPressed: onPressed,
       tooltip: label,
       style: IconButton.styleFrom(
-        backgroundColor: Colors.black.withValues(alpha: 0.32),
+        backgroundColor: Colors.white.withValues(alpha: 0.10),
         foregroundColor: Colors.white,
-        disabledForegroundColor: Colors.white38,
+        disabledForegroundColor: Colors.white30,
         minimumSize: const Size(48, 48),
       ),
       icon: Icon(icon),
@@ -434,8 +461,35 @@ class _GlassButton extends StatelessWidget {
   }
 }
 
-class _SmallAction extends StatelessWidget {
-  const _SmallAction({
+class _MiniGlassButton extends StatelessWidget {
+  const _MiniGlassButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: label,
+      style: IconButton.styleFrom(
+        backgroundColor: Colors.black.withValues(alpha: 0.35),
+        foregroundColor: Colors.white,
+        disabledForegroundColor: Colors.white38,
+        minimumSize: const Size(46, 46),
+      ),
+      icon: Icon(icon, size: 22),
+    );
+  }
+}
+
+class _BottomAction extends StatelessWidget {
+  const _BottomAction({
     required this.icon,
     required this.label,
     required this.onTap,
@@ -447,19 +501,27 @@ class _SmallAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _GlassButton(icon: icon, label: label, onPressed: onTap),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white, size: 27),
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -479,36 +541,39 @@ class _CaptureButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: enabled && !isBusy ? onPressed : null,
-      child: AnimatedOpacity(
-        opacity: enabled ? 1 : 0.5,
-        duration: const Duration(milliseconds: 160),
-        child: Container(
-          width: 92,
-          height: 92,
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 3),
-            color: Colors.black.withValues(alpha: 0.18),
-          ),
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
+      child: AnimatedScale(
+        scale: isBusy ? 0.94 : 1,
+        duration: const Duration(milliseconds: 120),
+        child: AnimatedOpacity(
+          opacity: enabled ? 1 : 0.45,
+          duration: const Duration(milliseconds: 160),
+          child: Container(
+            width: 88,
+            height: 88,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.lime,
+              border: Border.all(color: Colors.white, width: 3),
             ),
-            child: isBusy
-                ? const Padding(
-                    padding: EdgeInsets.all(22),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.yellow,
+              ),
+              child: isBusy
+                  ? const Padding(
+                      padding: EdgeInsets.all(21),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: AppTheme.ink,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.camera_alt_rounded,
+                      size: 28,
                       color: AppTheme.ink,
                     ),
-                  )
-                : const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 28,
-                    color: AppTheme.ink,
-                  ),
+            ),
           ),
         ),
       ),
@@ -537,22 +602,30 @@ class _CameraFallback extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF2B2535),
-            Color(0xFF141414),
-            Color(0xFF263126),
+            Color(0xFF4A3E22),
+            Color(0xFF242018),
+            Color(0xFF171717),
           ],
         ),
       ),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(36),
+          padding: const EdgeInsets.all(34),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.camera_alt_rounded,
-                color: AppTheme.lime,
-                size: 54,
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: AppTheme.yellow,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: AppTheme.ink,
+                  size: 30,
+                ),
               ),
               const SizedBox(height: 18),
               Text(
@@ -560,7 +633,7 @@ class _CameraFallback extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: 21,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -572,7 +645,7 @@ class _CameraFallback extends StatelessWidget {
               ),
               if (onAction != null && actionLabel != null) ...[
                 const SizedBox(height: 18),
-                FilledButton.tonal(
+                FilledButton(
                   onPressed: onAction,
                   child: Text(actionLabel!),
                 ),
