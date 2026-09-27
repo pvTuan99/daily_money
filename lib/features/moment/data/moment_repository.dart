@@ -121,6 +121,48 @@ class MomentRepository {
     return MomentCloudRepository.instance.syncMoments(moments);
   }
 
+  Future<SyncResult> syncTwoWay() async {
+    final localMoments = await getMoments();
+
+    final uploaded =
+        await MomentCloudRepository.instance.syncMoments(localMoments);
+    final cloudMoments =
+        await MomentCloudRepository.instance.fetchMoments();
+
+    final localById = {
+      for (final moment in localMoments) moment.id: moment,
+    };
+
+    var downloaded = 0;
+    final merged = <Moment>[];
+
+    for (final cloudMoment in cloudMoments) {
+      final localMoment = localById.remove(cloudMoment.id);
+
+      if (localMoment == null) {
+        downloaded++;
+        merged.add(cloudMoment);
+      } else {
+        merged.add(
+          cloudMoment.copyWith(
+            imagePath: localMoment.imagePath,
+          ),
+        );
+      }
+    }
+
+    merged.addAll(localById.values);
+    merged.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    await _writeMoments(merged);
+
+    return SyncResult(
+      uploaded: uploaded,
+      downloaded: downloaded,
+      total: merged.length,
+    );
+  }
+
   Future<void> _writeMoments(List<Moment> moments) async {
     final metadata = await _metadataFile();
     await metadata.writeAsString(
@@ -141,4 +183,17 @@ class MomentRepository {
 
     return fileName.substring(dotIndex + 1).toLowerCase();
   }
+}
+
+
+class SyncResult {
+  const SyncResult({
+    required this.uploaded,
+    required this.downloaded,
+    required this.total,
+  });
+
+  final int uploaded;
+  final int downloaded;
+  final int total;
 }
