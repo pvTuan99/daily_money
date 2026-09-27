@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "646940855383",
+    "project_id": "daylimoney-5d1e4",
+    "storage_bucket": "daylimoney-5d1e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646940855383:android:959dae42acf31d05cf6712",
+        "android_client_info": {
+          "package_name": "com.example.daily_money"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUSDfd2hsi3Ck2aIlOxV1EhQeijiRaga4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
