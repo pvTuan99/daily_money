@@ -15,11 +15,33 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late Future<List<Moment>> _momentsFuture;
+  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
     _momentsFuture = MomentRepository.instance.getMoments();
+  }
+
+  Future<void> _syncCloud() async {
+    if (_isSyncing) return;
+
+    setState(() => _isSyncing = true);
+
+    try {
+      final synced = await MomentRepository.instance.syncAllToCloud();
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Đã đồng bộ $synced khoảnh khắc lên Firestore.')),
+        );
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
   }
 
   Future<void> _openHistory() async {
@@ -83,10 +105,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: _openHistory,
                   ),
                   const _Divider(),
-                  const _SettingsTile(
-                    icon: Icons.cloud_off_rounded,
-                    title: 'Đang lưu trên thiết bị',
-                    subtitle: 'Firebase sẽ được thêm ở giai đoạn sau',
+                  _SettingsTile(
+                    icon: _isSyncing
+                        ? Icons.sync_rounded
+                        : Icons.cloud_done_outlined,
+                    title: _isSyncing
+                        ? 'Đang đồng bộ...'
+                        : 'Đồng bộ lên Firebase',
+                    subtitle: 'Metadata khoảnh khắc được lưu trên Firestore',
+                    onTap: _isSyncing ? null : _syncCloud,
                   ),
                 ],
               ),
@@ -126,13 +153,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.lock_outline_rounded,
                     title: 'Riêng tư',
-                    subtitle: 'Hiện tại mọi dữ liệu chỉ nằm trên máy này',
+                    subtitle: 'Ảnh vẫn nằm trên máy; metadata có thể đồng bộ Firestore',
                   ),
                   _Divider(),
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     title: 'Phiên bản',
-                    subtitle: 'Prototype 0.2',
+                    subtitle: 'Prototype 0.3 · Phase 7',
                   ),
                 ],
               ),
