@@ -31,6 +31,7 @@ extension WalletTypeX on WalletType {
 class FinanceWallet {
   const FinanceWallet({
     required this.id,
+    required this.cloudId,
     required this.name,
     required this.type,
     required this.initialBalance,
@@ -43,6 +44,7 @@ class FinanceWallet {
   });
 
   final int id;
+  final String cloudId;
   final String? systemKey;
   final String name;
   final WalletType type;
