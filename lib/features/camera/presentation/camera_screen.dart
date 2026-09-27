@@ -398,11 +398,11 @@ class _CameraPage extends StatelessWidget {
         Expanded(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
               child: AspectRatio(
-                aspectRatio: 0.82,
+                aspectRatio: 0.88,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(34),
+                  borderRadius: BorderRadius.circular(38),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -570,11 +570,11 @@ class _MomentFeedPage extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: onTap,
-                    borderRadius: BorderRadius.circular(34),
+                    borderRadius: BorderRadius.circular(38),
                     child: AspectRatio(
                       aspectRatio: 0.82,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(34),
+                        borderRadius: BorderRadius.circular(38),
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
