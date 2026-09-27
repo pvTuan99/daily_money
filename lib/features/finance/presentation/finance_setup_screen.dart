@@ -7,6 +7,7 @@ import '../data/repositories/wallet_repository.dart';
 import '../domain/finance_category.dart';
 import '../domain/finance_exception.dart';
 import '../domain/wallet.dart';
+import '../services/finance_sync_service.dart';
 
 class FinanceSetupScreen extends StatefulWidget {
   const FinanceSetupScreen({super.key});
@@ -20,7 +21,9 @@ class _FinanceSetupScreenState extends State<FinanceSetupScreen>
   late final TabController _tabController;
   WalletRepository? _walletRepository;
   CategoryRepository? _categoryRepository;
+  FinanceSyncService? _syncService;
   bool _showArchived = false;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -35,6 +38,38 @@ class _FinanceSetupScreenState extends State<FinanceSetupScreen>
     if (userId != null) {
       _walletRepository = WalletRepository(ownerId: userId);
       _categoryRepository = CategoryRepository(ownerId: userId);
+      _syncService = FinanceSyncService(ownerId: userId);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _syncFinance(silent: true);
+      });
+    }
+  }
+
+  Future<void> _syncFinance({bool silent = false}) async {
+    final service = _syncService;
+    if (service == null || _isSyncing) return;
+
+    setState(() => _isSyncing = true);
+
+    try {
+      final result = await service.sync();
+      if (!mounted || silent) return;
+
+      if (!result.online) {
+        _showMessage(
+          'Đang offline. Thay đổi vẫn được lưu trên máy và sẽ đồng bộ sau.',
+        );
+        return;
+      }
+
+      _showMessage(
+        'Đã đồng bộ tài chính: ${result.uploaded} tải lên, '
+        '${result.downloaded} cập nhật từ cloud.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
     }
   }
 
@@ -73,6 +108,20 @@ class _FinanceSetupScreenState extends State<FinanceSetupScreen>
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         actions: [
+          IconButton(
+            onPressed: _isSyncing ? null : () => _syncFinance(),
+            tooltip: 'Đồng bộ Firebase',
+            icon: _isSyncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: AppTheme.yellow,
+                    ),
+                  )
+                : const Icon(Icons.cloud_sync_outlined),
+          ),
           IconButton(
             onPressed: () {
               setState(() => _showArchived = !_showArchived);
