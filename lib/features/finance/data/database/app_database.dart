@@ -126,6 +126,8 @@ final class AppDatabase extends _$AppDatabase {
               name: seed.name,
               type: seed.type,
               iconKey: Value(seed.iconKey),
+              createdAt: Value(DateTime.fromMillisecondsSinceEpoch(0)),
+              updatedAt: Value(DateTime.fromMillisecondsSinceEpoch(0)),
             ),
           );
         } else if (exists.cloudId == null) {
@@ -133,7 +135,6 @@ final class AppDatabase extends _$AppDatabase {
               .write(
             WalletsCompanion(
               cloudId: Value(seed.systemKey),
-              updatedAt: Value(DateTime.now()),
             ),
           );
         }
@@ -160,6 +161,8 @@ final class AppDatabase extends _$AppDatabase {
               iconKey: Value(seed.iconKey),
               isDefault: const Value(true),
               sortOrder: Value(seed.sortOrder),
+              createdAt: Value(DateTime.fromMillisecondsSinceEpoch(0)),
+              updatedAt: Value(DateTime.fromMillisecondsSinceEpoch(0)),
             ),
           );
         } else if (exists.cloudId == null) {
@@ -168,7 +171,6 @@ final class AppDatabase extends _$AppDatabase {
               .write(
             CategoriesCompanion(
               cloudId: Value(seed.systemKey),
-              updatedAt: Value(DateTime.now()),
             ),
           );
         }
