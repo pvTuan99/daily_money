@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.account_balance_wallet_outlined,
                     title: 'Ví & danh mục',
-                    subtitle: 'Thiết lập nền tảng quản lý thu chi local',
+                    subtitle: 'SQLite offline + Firebase cho ví và danh mục',
                     onTap: _openFinanceSetup,
                   ),
                 ],
@@ -187,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     title: 'Phiên bản',
-                    subtitle: 'Prototype 0.5 · Phase 8A',
+                    subtitle: 'Prototype 0.6 · Phase 8A.2',
                   ),
                 ],
               ),
