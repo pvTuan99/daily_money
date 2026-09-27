@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../domain/moment.dart';
+import 'moment_cloud_repository.dart';
 
 class MomentRepository {
   MomentRepository._();
@@ -80,6 +81,7 @@ class MomentRepository {
     final updated = [moment, ...moments];
 
     await _writeMoments(updated);
+    await MomentCloudRepository.instance.upsertMoment(moment);
 
     return moment;
   }
@@ -96,6 +98,7 @@ class MomentRepository {
     moments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     await _writeMoments(moments);
+    await MomentCloudRepository.instance.upsertMoment(updatedMoment);
     return updatedMoment;
   }
 
@@ -109,6 +112,13 @@ class MomentRepository {
     if (await imageFile.exists()) {
       await imageFile.delete();
     }
+
+    await MomentCloudRepository.instance.deleteMoment(moment.id);
+  }
+
+  Future<int> syncAllToCloud() async {
+    final moments = await getMoments();
+    return MomentCloudRepository.instance.syncMoments(moments);
   }
 
   Future<void> _writeMoments(List<Moment> moments) async {
