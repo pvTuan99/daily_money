@@ -1,20 +1,30 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drift/drift.dart';
 
 import '../../domain/finance_exception.dart';
 import '../../domain/wallet.dart';
 import '../database/app_database.dart' as db;
+import 'finance_cloud_repository.dart';
 
 class WalletRepository {
   WalletRepository({
     required String ownerId,
     db.AppDatabase? database,
+    FinanceCloudRepository? cloudRepository,
   })  : _ownerId = ownerId,
-        _db = database ?? db.AppDatabase.instance;
+        _db = database ?? db.AppDatabase.instance,
+        _cloud = cloudRepository ?? FinanceCloudRepository(ownerId: ownerId);
 
   final String _ownerId;
   final db.AppDatabase _db;
+  final FinanceCloudRepository _cloud;
 
-  Future<void> ensureReady() => _db.seedDefaultsForUser(_ownerId);
+  Future<void> ensureReady() async {
+    await _db.seedDefaultsForUser(_ownerId);
+    await _assignMissingCloudIds();
+  }
 
   Stream<List<FinanceWallet>> watchWallets({
     bool includeArchived = false,
@@ -66,17 +76,27 @@ class WalletRepository {
       throw const FinanceValidationException('Tên ví không được để trống.');
     }
 
+    await ensureReady();
     await _ensureUniqueName(cleanName);
 
-    return _db.into(_db.wallets).insert(
+    final now = DateTime.now();
+    final cloudId = _newCloudId('wallet');
+
+    final id = await _db.into(_db.wallets).insert(
           db.WalletsCompanion.insert(
             ownerId: _ownerId,
+            cloudId: Value(cloudId),
             name: cleanName,
             type: type.dbValue,
             initialBalance: Value(initialBalance),
             iconKey: Value(_iconForType(type)),
+            createdAt: Value(now),
+            updatedAt: Value(now),
           ),
         );
+
+    await _pushById(id);
+    return id;
   }
 
   Future<void> updateWallet({
@@ -90,6 +110,7 @@ class WalletRepository {
       throw const FinanceValidationException('Tên ví không được để trống.');
     }
 
+    await ensureReady();
     await _ensureUniqueName(cleanName, exceptId: id);
 
     final affected = await (_db.update(_db.wallets)
@@ -110,9 +131,13 @@ class WalletRepository {
     if (affected == 0) {
       throw const FinanceValidationException('Không tìm thấy ví để cập nhật.');
     }
+
+    await _pushById(id);
   }
 
   Future<void> setArchived(int id, bool archived) async {
+    await ensureReady();
+
     final affected = await (_db.update(_db.wallets)
           ..where(
             (table) =>
@@ -127,6 +152,48 @@ class WalletRepository {
 
     if (affected == 0) {
       throw const FinanceValidationException('Không tìm thấy ví.');
+    }
+
+    await _pushById(id);
+  }
+
+  Future<void> _assignMissingCloudIds() async {
+    final rows = await (_db.select(_db.wallets)
+          ..where(
+            (table) =>
+                table.ownerId.equals(_ownerId) &
+                table.cloudId.isNull(),
+          ))
+        .get();
+
+    for (final row in rows) {
+      final cloudId = row.systemKey ?? _newCloudId('wallet');
+      await (_db.update(_db.wallets)..where((table) => table.id.equals(row.id)))
+          .write(
+        db.WalletsCompanion(
+          cloudId: Value(cloudId),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    }
+  }
+
+  Future<void> _pushById(int id) async {
+    final row = await (_db.select(_db.wallets)
+          ..where(
+            (table) =>
+                table.id.equals(id) & table.ownerId.equals(_ownerId),
+          )
+          ..limit(1))
+        .getSingleOrNull();
+
+    if (row == null) return;
+
+    try {
+      await _cloud.upsertWallet(_mapWallet(row));
+    } on FirebaseException {
+      // Local SQLite remains the immediate source while offline.
+      // A later full sync retries this write.
     }
   }
 
@@ -157,8 +224,14 @@ class WalletRepository {
   }
 
   FinanceWallet _mapWallet(db.Wallet row) {
+    final cloudId = row.cloudId ?? row.systemKey;
+    if (cloudId == null) {
+      throw StateError('Wallet chưa có cloudId.');
+    }
+
     return FinanceWallet(
       id: row.id,
+      cloudId: cloudId,
       systemKey: row.systemKey,
       name: row.name,
       type: WalletTypeX.fromDb(row.type),
@@ -177,4 +250,10 @@ class WalletRepository {
         WalletType.eWallet => 'account_balance_wallet',
         WalletType.savings => 'savings',
       };
+}
+
+String _newCloudId(String prefix) {
+  final now = DateTime.now().microsecondsSinceEpoch;
+  final random = Random.secure().nextInt(1 << 32).toRadixString(16);
+  return '${prefix}_${now}_$random';
 }
