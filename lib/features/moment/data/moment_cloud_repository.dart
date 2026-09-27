@@ -65,6 +65,41 @@ class MomentCloudRepository {
     return synced;
   }
 
+  Future<List<Moment>> fetchMoments() async {
+    final collection = _momentsCollection;
+    if (collection == null) return const [];
+
+    try {
+      final snapshot = await collection
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        final createdAt = data['createdAt'];
+        final spendingData = data['spending'];
+
+        return Moment(
+          id: data['id'] as String? ?? doc.id,
+          imagePath: '',
+          caption: data['caption'] as String? ?? '',
+          createdAt: createdAt is Timestamp
+              ? createdAt.toDate()
+              : DateTime.fromMillisecondsSinceEpoch(0),
+          spending: spendingData is Map<String, dynamic>
+              ? MomentSpending.fromJson(spendingData)
+              : spendingData is Map
+                  ? MomentSpending.fromJson(
+                      Map<String, dynamic>.from(spendingData),
+                    )
+                  : null,
+        );
+      }).toList();
+    } on FirebaseException {
+      return const [];
+    }
+  }
+
   Future<int?> cloudMomentCount() async {
     final collection = _momentsCollection;
     if (collection == null) return null;
