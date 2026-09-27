@@ -135,10 +135,13 @@ class _FinanceSetupScreenState extends State<FinanceSetupScreen>
           switch (_tabController.index) {
             case 0:
               _showWalletSheet();
+              break;
             case 1:
               _showCategorySheet(CategoryType.expense);
+              break;
             case 2:
               _showCategorySheet(CategoryType.income);
+              break;
           }
         },
         icon: const Icon(Icons.add_rounded),
@@ -461,10 +464,13 @@ class _WalletList extends StatelessWidget {
                     switch (value) {
                       case 'edit':
                         onEdit(wallet);
+                        break;
                       case 'archive':
                         onArchiveChanged(wallet, true);
+                        break;
                       case 'restore':
                         onArchiveChanged(wallet, false);
+                        break;
                     }
                   },
                   itemBuilder: (_) => [
@@ -557,10 +563,13 @@ class _CategoryList extends StatelessWidget {
                     switch (value) {
                       case 'edit':
                         onEdit(category);
+                        break;
                       case 'archive':
                         onArchiveChanged(category, true);
+                        break;
                       case 'restore':
                         onArchiveChanged(category, false);
+                        break;
                     }
                   },
                   itemBuilder: (_) => [
