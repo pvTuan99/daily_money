@@ -8,6 +8,8 @@ class Wallets extends Table {
 
   TextColumn get ownerId => text()();
 
+  TextColumn get cloudId => text().nullable()();
+
   TextColumn get systemKey => text().nullable()();
 
   TextColumn get name => text().withLength(min: 1, max: 60)();
@@ -33,6 +35,8 @@ class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   TextColumn get ownerId => text()();
+
+  TextColumn get cloudId => text().nullable()();
 
   TextColumn get systemKey => text().nullable()();
 
@@ -65,22 +69,41 @@ final class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (migrator) async {
           await migrator.createAll();
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_wallets_owner_archived '
-            'ON wallets(owner_id, is_archived)',
-          );
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_categories_owner_type_archived '
-            'ON categories(owner_id, type, is_archived)',
-          );
+          await _createIndexes();
+        },
+        onUpgrade: (migrator, from, to) async {
+          if (from < 2) {
+            await migrator.addColumn(wallets, wallets.cloudId);
+            await migrator.addColumn(categories, categories.cloudId);
+          }
+          await _createIndexes();
         },
       );
+
+  Future<void> _createIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_wallets_owner_archived '
+      'ON wallets(owner_id, is_archived)',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_owner_cloud '
+      'ON wallets(owner_id, cloud_id) WHERE cloud_id IS NOT NULL',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_categories_owner_type_archived '
+      'ON categories(owner_id, type, is_archived)',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_owner_cloud '
+      'ON categories(owner_id, cloud_id) WHERE cloud_id IS NOT NULL',
+    );
+  }
 
   Future<void> seedDefaultsForUser(String ownerId) async {
     await transaction(() async {
@@ -98,10 +121,19 @@ final class AppDatabase extends _$AppDatabase {
           await into(wallets).insert(
             WalletsCompanion.insert(
               ownerId: ownerId,
+              cloudId: Value(seed.systemKey),
               systemKey: Value(seed.systemKey),
               name: seed.name,
               type: seed.type,
               iconKey: Value(seed.iconKey),
+            ),
+          );
+        } else if (exists.cloudId == null) {
+          await (update(wallets)..where((table) => table.id.equals(exists.id)))
+              .write(
+            WalletsCompanion(
+              cloudId: Value(seed.systemKey),
+              updatedAt: Value(DateTime.now()),
             ),
           );
         }
@@ -121,12 +153,22 @@ final class AppDatabase extends _$AppDatabase {
           await into(categories).insert(
             CategoriesCompanion.insert(
               ownerId: ownerId,
+              cloudId: Value(seed.systemKey),
               systemKey: Value(seed.systemKey),
               name: seed.name,
               type: seed.type,
               iconKey: Value(seed.iconKey),
               isDefault: const Value(true),
               sortOrder: Value(seed.sortOrder),
+            ),
+          );
+        } else if (exists.cloudId == null) {
+          await (update(categories)
+                ..where((table) => table.id.equals(exists.id)))
+              .write(
+            CategoriesCompanion(
+              cloudId: Value(seed.systemKey),
+              updatedAt: Value(DateTime.now()),
             ),
           );
         }
