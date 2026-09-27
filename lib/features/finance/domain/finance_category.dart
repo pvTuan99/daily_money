@@ -21,6 +21,7 @@ extension CategoryTypeX on CategoryType {
 class FinanceCategory {
   const FinanceCategory({
     required this.id,
+    required this.cloudId,
     required this.name,
     required this.type,
     required this.iconKey,
@@ -34,6 +35,7 @@ class FinanceCategory {
   });
 
   final int id;
+  final String cloudId;
   final String? systemKey;
   final String name;
   final CategoryType type;
