@@ -422,8 +422,7 @@ class _CameraPage extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                'giữ lại
-một chút hôm nay.',
+                                'giữ lại\\nmột chút hôm nay.',
                                 style: Theme.of(context)
                                     .textTheme
                                     .headlineMedium
