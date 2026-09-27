@@ -29,13 +29,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isSyncing = true);
 
     try {
-      final synced = await MomentRepository.instance.syncAllToCloud();
+      final result = await MomentRepository.instance.syncTwoWay();
       if (!mounted) return;
+
+      setState(() {
+        _momentsFuture = MomentRepository.instance.getMoments();
+      });
 
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(content: Text('Đã đồng bộ $synced khoảnh khắc lên Firestore.')),
+          SnackBar(
+            content: Text(
+              'Đồng bộ xong: ${result.uploaded} tải lên, '
+              '${result.downloaded} tải về.',
+            ),
+          ),
         );
     } finally {
       if (mounted) {
@@ -111,8 +120,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         : Icons.cloud_done_outlined,
                     title: _isSyncing
                         ? 'Đang đồng bộ...'
-                        : 'Đồng bộ lên Firebase',
-                    subtitle: 'Metadata khoảnh khắc được lưu trên Firestore',
+                        : 'Đồng bộ hai chiều',
+                    subtitle: 'Tải lên và tải metadata từ Firestore về máy',
                     onTap: _isSyncing ? null : _syncCloud,
                   ),
                 ],
@@ -159,7 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     title: 'Phiên bản',
-                    subtitle: 'Prototype 0.3 · Phase 7',
+                    subtitle: 'Prototype 0.4 · Phase 7B',
                   ),
                 ],
               ),
