@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../finance/presentation/finance_setup_screen.dart';
 import '../../history/presentation/history_screen.dart';
 import '../../moment/data/moment_repository.dart';
 import '../../moment/domain/moment.dart';
@@ -51,6 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() => _isSyncing = false);
       }
     }
+  }
+
+  Future<void> _openFinanceSetup() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const FinanceSetupScreen()),
+    );
   }
 
   Future<void> _openHistory() async {
@@ -128,6 +135,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 14),
               _SectionCard(
+                title: 'Tài chính',
+                children: [
+                  _SettingsTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Ví & danh mục',
+                    subtitle: 'Thiết lập nền tảng quản lý thu chi local',
+                    onTap: _openFinanceSetup,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _SectionCard(
                 title: 'Tài khoản',
                 children: [
                   _SettingsTile(
@@ -168,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _SettingsTile(
                     icon: Icons.info_outline_rounded,
                     title: 'Phiên bản',
-                    subtitle: 'Prototype 0.4 · Phase 7B',
+                    subtitle: 'Prototype 0.5 · Phase 8A',
                   ),
                 ],
               ),
