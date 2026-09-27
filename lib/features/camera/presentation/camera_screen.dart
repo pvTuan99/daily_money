@@ -39,7 +39,7 @@ class _CameraScreenState extends State<CameraScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(_loadCameras());
-    unawaited(_loadMoments());
+    unawaited(_initialSync());
   }
 
   @override
@@ -66,6 +66,14 @@ class _CameraScreenState extends State<CameraScreen>
       unawaited(controller.dispose());
     } else if (state == AppLifecycleState.resumed && _cameras.isNotEmpty) {
       unawaited(_initializeCamera(_selectedCameraIndex));
+    }
+  }
+
+  Future<void> _initialSync() async {
+    try {
+      await MomentRepository.instance.syncTwoWay();
+    } finally {
+      await _loadMoments();
     }
   }
 
